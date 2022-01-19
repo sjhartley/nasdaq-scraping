@@ -118,10 +118,10 @@ function wikiSearch(indice_str, ticker, obj){
     constituents('table#constituents tbody tr').each(function(i, el){
       let table_entry=constituents(el);
       var ticker_entry=table_entry.children('td').eq(ticker_pos).text().trim();
-      console.log(ticker_entry);
+      //console.log(ticker_entry);
       if(ticker == ticker_entry){
         var comp_wiki="https://en.wikipedia.org" + table_entry.children('td').eq(link_pos).children('a').attr('href');
-        console.log(`comp_wiki=${comp_wiki}`);
+        //console.log(`comp_wiki=${comp_wiki}`);
         companyDataRetr(comp_wiki, obj);
         return false;
       }
@@ -160,7 +160,6 @@ function companyDataRetr(url, obj){
       let indice_txt=comp_txt(el);
       if(i === 0){
         var descr=bracket_remover(indice_txt.parents('p').text());
-        console.log(descr);
         var logo="";
         var hq="";
         var industry="";
@@ -173,8 +172,9 @@ function companyDataRetr(url, obj){
             industry = box.parent('tr').children('td').text();
           }
         });
-        descr = `<p>Source: ${url}\n**Industry:** ${industry}\n**Headquarters:** ${hq}\n**Company Overview:** ${descr}>/p>`;
+        descr = `\n\n${line_generator('*', 50)}\n\nSource: ${url}\n\n**Industry:** ${industry}\n\n**Headquarters:** ${hq}\n\n**Company Overview:** ${descr}`;
         console.log(descr);
+        return_menu();
         return false;
       }
     });
@@ -213,41 +213,47 @@ function nasdaq_get(command_stuff){
   var help_Str = `${title_Str}\n${line_generator('-', title_Str.length-1)}\n\n
   1. To display the components of NASDAQ100: "nasdaq_get --l"\n
   2. To display data associated with a specific company: "nasdaq_get --kw(TICKER OR COMPANY Name)"\n
-  3. To display market info: "nasdaq_get --market-info\n"`;
+  3. To display market info: "nasdaq_get --market-info"\n`;
 
   if(keyWord.search('--l') !== -1){
     console.log("listing!!!");
     axios(options).then(function(response){
       var body=response.data;
-      console.log(body);
+      //console.log(body);
       var date_str=`Time Stamp: ${body.data['date']}`;
       var stock_recs=body.data.data.rows;
-      console.log(stock_recs);
+      //console.log(stock_recs);
       msg_str = msg_str + `Components of NASDAQ100\n${date_str}\n${line_generator('-', date_str.length-1)}\n\n`;
       Object.keys(stock_recs).forEach(function(key) {
-        console.log(key);
+        //console.log(key);
         var companyName = stock_recs[key].companyName.toString();
         var symbol = stock_recs[key].symbol.toUpperCase();
         msg_str = msg_str + `Symbol: ${symbol}, Name: ${companyName}\n\n`;
       });
       console.log(msg_str);
+      return_menu();
     }).catch(function(err){
       console.log(err);
     });
   }
-  else if(keyWord.toLowerCase() === 'help'){
+  else if(keyWord.toLowerCase().search("help") !== -1){
     console.log(help_Str);
+    return_menu();
   }
   else if(keyWord.toLowerCase().search("market-info") !== -1){
     options.url="https://api.nasdaq.com/api/market-info";
     axios(options).then(function(response){
       var body=response.data;
-      console.log(body.data);
+      //console.log(body.data);
 
+      var info_str="";
       Object.keys(body.data).forEach(function(el, idx){
-          console.log(`${el}: ${body.data[el]}`);
-      })
-
+          //console.log(`${el}: ${body.data[el]}`);
+          info_str=info_str+`${el}: ${body.data[el]}\n`
+      });
+      info_str=`${line_generator('*', 50)}\n\n${info_str}`;
+      console.log(info_str);
+      return_menu();
     })
   }
   else{
@@ -265,13 +271,12 @@ function nasdaq_get(command_stuff){
           var last = stock_recs[key].lastSalePrice;
           var netChange = stock_recs[key].netChange;
           var percenChange = stock_recs[key].percentageChange;
-          msg_str=`Source: ${url}\nSymbol: ${symbol}\nName: ${companyName}\nMarket Cap: ${marketCap}\nLast sale price: ${last}\nNet change: ${netChange}\nPercentage change: ${percenChange}`;
+          msg_str=`${line_generator('*', 50)}\n\nSource: ${url}\n\nSymbol: ${symbol}\n\nName: ${companyName}\n\nMarket Cap: ${marketCap}\n\nLast sale price: ${last}\n\nNet change: ${netChange}\n\nPercentage change: ${percenChange}`;
           console.log(msg_str);
           var textObj={
             text: msg_str
           };
           wikiSearch("nasdaq-100", symbol, textObj);
-          console.log(msg_str);
           return false;
         }
       });
