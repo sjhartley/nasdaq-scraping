@@ -201,8 +201,6 @@ function nasdaq_get(command_stuff){
       port: 3200
     },
   }
-  //A custom user agent is used so that requests made to the nasdaq API are not rejected
-  //the data to be retrieved is in JSON format
 
   var signal_Dict = {
     "+": 1,
